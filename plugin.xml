@@ -30,8 +30,8 @@
 		  </feature>
 		</config-file>
 
-		<source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetector.java" target-dir="src/android/com/sanda/plugins"/>
-		 <source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetectorApp.java" target-dir="src/android/com/sanda/plugins"/>
+		<source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetector.java" target-dir="src/com/sanda/plugins/WatermarkDetector"/>
+		 <source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetectorApp.java" target-dir="srccom/sanda/plugins/WatermarkDetector"/>
 
 		 <config-file target="AndroidManifest.xml" parent="/manifest">
 				
