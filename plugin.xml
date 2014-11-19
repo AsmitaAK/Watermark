@@ -1,0 +1,56 @@
+	<?xml version="1.0" encoding="UTF-8"?>
+	<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+			xmlns:android="http://schemas.android.com/apk/res/android"
+			id="com.sanda.plugins.WatermarkDetector"
+			version="0.0.5">
+
+	  <name>WatermarkDetector</name>
+
+	  <description>
+		WatermarkDetectorApp Plugin 
+	  </description>
+
+	  <license>Sanda</license>
+
+	  <engines>
+		<engine name="cordova" version=">=3.0.0"/>
+	  </engines>
+
+	  <js-module src="www/WatermarkDetector.js" name="WatermarkDetector">
+		<clobbers target="window.plugins.WatermarkDetector" />
+	  </js-module>
+
+	 
+	  <!-- android -->
+	  <platform name="android">
+
+		<config-file target="res/xml/config.xml" parent="/*">
+		  <feature name="WatermarkDetector">
+			<param name="android-package" value="com.sanda.plugins.WatermarkDetector" />
+		  </feature>
+		</config-file>
+
+		<source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetector.java" target-dir="src/android/com/sanda/plugins"/>
+		 <source-file src="src/android/com/sanda/plugins/WatermarkDetector/WatermarkDetectorApp.java" target-dir="src/android/com/sanda/plugins"/>
+
+		 <config-file target="AndroidManifest.xml" parent="/manifest">
+				
+				 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+				 <uses-permission android:name="android.permission.RECORD_AUDIO" />
+			</config-file>
+
+
+	 <source-file src="lib/android/AlgorithmManager.jar" target-dir="libs"/>
+	 <source-file src="lib/android/SITMarkAudioAnnotationAlgoManWrapper-1.2.jar" target-dir="libs"/>
+	 <source-file src="lib/android/SITMarkJNIHelper-0.5.jar" target-dir="libs"/>
+	 <source-file src="lib/android/armeabi/libawt3-sdk.so" target-dir="libs/armeabi"/>
+	<source-file src="lib/android/armeabi/libSITMarkAudioAnnotation.so" target-dir="libs/armeabi/"/>
+	<source-file src="lib/android/armeabi-v7a/libawt3-sdk.so" target-dir="libs/armeabi-v7a"/>
+	<source-file src="lib/android/armeabi-v7a/libjingle_peerconnection_so.so" target-dir="libs/armeabi-v7a"/>
+	<source-file src="lib/android/armeabi-v7a/libSITMarkAudioAnnotation.so" target-dir="libs/armeabi-v7a"/>
+	<source-file src="lib/android/mips/libSITMarkAudioAnnotation.so" target-dir="libs/mips"/>
+	 <source-file src="lib/android/x86/libSITMarkAudioAnnotation.so" target-dir="libs/x86"/>
+
+	  </platform>
+
+	</plugin>
