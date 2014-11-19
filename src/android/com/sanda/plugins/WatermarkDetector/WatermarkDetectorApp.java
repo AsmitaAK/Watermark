@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import de.fraunhofer.sit.watermarking.algorithmmanager.AlgorithmParameter;
 import de.fraunhofer.sit.watermarking.algorithmmanager.WatermarkMessage;
 import de.fraunhofer.sit.watermarking.algorithmmanager.detector.StreamWatermarkDetector;
@@ -64,48 +65,72 @@ public class WatermarkDetectorApp extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.record);
+//		setContentView(R.layout.record);
 		
 		
-		mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
-				AudioFormat.ENCODING_PCM_16BIT);
-		System.out.println("mBufSize = " + mBufSize);
-		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
-				sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-				AudioFormat.ENCODING_PCM_16BIT, mBufSize);
-		
+//		mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
+//				AudioFormat.ENCODING_PCM_16BIT);
+//		System.out.println("mBufSize = " + mBufSize);
+//		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
+//				sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+//				AudioFormat.ENCODING_PCM_16BIT, mBufSize);
+//		
 
-		mAudioStartBtn = (Button) findViewById(R.id.mediarecorder1_AudioStartBtn);
-		mAudioStopBtn = (Button) findViewById(R.id.mediarecorder1_AudioStopBtn);
-		mResultTextView = (TextView)findViewById(R.id.resultTextView);
-		mResultTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
-		mResultTextView.setText("Ready");
+//		mAudioStartBtn = (Button) findViewById(R.id.mediarecorder1_AudioStartBtn);
+//		mAudioStopBtn = (Button) findViewById(R.id.mediarecorder1_AudioStopBtn);
+//		mResultTextView = (TextView)findViewById(R.id.resultTextView);
+//		mResultTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
+//		mResultTextView.setText("Ready");
 
 		
-		mAudioStartBtn.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				try {
-					isPaly = true;
-					outputMessage = "Start detecting watermarks...\n";
-					mResultTextView.setText(outputMessage);
-					new RecoderThread().start();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+	
+
+	}
+	
+	@Override
+		protected void onResume() {
+			// TODO Auto-generated method stub
+			super.onResume();
+			mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
+					AudioFormat.ENCODING_PCM_16BIT);
+			System.out.println("mBufSize = " + mBufSize);
+			mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
+					sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+					AudioFormat.ENCODING_PCM_16BIT, mBufSize);
+			
+			start();	
+			
+		}
+	
+	public void start(){
+		try {
+			isPaly = true;
+			outputMessage = "Start detecting watermarks...\n";
+			System.out.println(outputMessage);
+//			mResultTextView.setText(outputMessage);
+			new RecoderThread(mAudioRecord).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+public void stop(){
+		mAudioRecord.startRecording();
+		isPaly = false;
+//		mResultTextView.setText("Ready");
+		numberOfFoundMessage = 0;
+		detector = null;
+	}
+
+
+@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
 		
-		mAudioStopBtn.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				mAudioRecord.startRecording();
-				isPaly = false;
-				mResultTextView.setText("Ready");
-				numberOfFoundMessage = 0;
-				detector = null;
-			}
-		}); 
+		stop();
+		
 	}
 	
 	private void testDirectly(InputStream stream) {
@@ -138,8 +163,8 @@ public class WatermarkDetectorApp extends Activity {
 				System.out.println("Starting detection from white noise file...");
 			}
 			
-			WatermarkMessage expectedMessage = new WatermarkMessage(MESSAGE_IN_WHITENOISE, WatermarkMessage.BINARY_MESSAGE);
-			InputStream markedWhiteNoise = getAssets().open(MARKED_WHITE_NOISE_WAV);
+//			WatermarkMessage expectedMessage = new WatermarkMessage(MESSAGE_IN_WHITENOISE, WatermarkMessage.BINARY_MESSAGE);
+//			InputStream markedWhiteNoise = getAssets().open(MARKED_WHITE_NOISE_WAV);
 //			detectFromStream(detector, null/*expectedMessage*/, markedWhiteNoise);
 			detectFromStream(detector, null, stream);
 			System.out.println("Finished testing SITMarkAudio annotation detector. All is well.");
@@ -172,13 +197,18 @@ public class WatermarkDetectorApp extends Activity {
 					distinctFoundMessages.add(detectedMessage.toString());
 					numberOfFoundMessage++;
 					System.out.println("++++ " + detectedMessage.toString());
+					Toast toast = Toast.makeText(getApplicationContext(), detectedMessage.toString(), Toast.LENGTH_LONG);
+					toast.show();
 					outputMessage += String.format("%s: %s\n", String.format("%03d",numberOfFoundMessage), detectedMessage.toString());
-					mResultTextView.post(new Runnable(){
-					    @Override
-					    public void run() {
-					    	mResultTextView.setText(outputMessage);
-					    }
-					});
+					
+					System.out.println(" output message is " + outputMessage);
+					
+//					mResultTextView.post(new Runnable(){
+//					    @Override
+//					    public void run() {
+//					    	mResultTextView.setText(outputMessage);
+//					    }
+//					});
 				}
 			}
 		} while (foundMessage);
@@ -197,6 +227,11 @@ public class WatermarkDetectorApp extends Activity {
 	
 	public class RecoderThread extends Thread {
 
+		public AudioRecord mAudioRecord;
+		public RecoderThread(AudioRecord mAudioRecord){
+			this.mAudioRecord = mAudioRecord;
+		}
+		
 		@Override
 		public void run() {
 			super.run();
