@@ -39,6 +39,19 @@
 				 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 			</config-file>
 
+			<config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity
+                    android:name="com.sanda.plugins.WatermarkDetector.WatermarkDetectorApp"
+                    android:finishOnTaskLaunch="true"
+                    android:launchMode="singleInstance"
+                    android:noHistory="true"
+                    >
+                <intent-filter>
+                    
+                </intent-filter>
+               
+            </activity>
+        </config-file>
 
 	 <source-file src="lib/android/AlgorithmManager.jar" target-dir="libs"/>
 	 <source-file src="lib/android/SITMarkAudioAnnotationAlgoManWrapper-1.2.jar" target-dir="libs"/>
