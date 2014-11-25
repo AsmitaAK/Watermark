@@ -1,4 +1,4 @@
-var exec = require('cordova/exec');
+cordova.define("com.sanda.plugins.WatermarkDetector.WatermarkDetector", function(require, exports, module) { var exec = require('cordova/exec');
 
 /**
  * Provides access to the vibration mechanism on the device.
@@ -17,3 +17,22 @@ module.exports = {
         exec(successCallback, errorCallback, 'WatermarkDetector', 'start', []);
     },
 };
+
+});
+/*
+ function successCallback(data){
+	 alert("sanda"+data);
+ }
+ function errorCallback(data){
+	 alert("error");
+ }
+*/
+function success(data)
+{
+alert("success"+data); 
+}
+
+ function failure(data)
+{
+alert("failure");
+}

@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.cordova.PluginResult;
+
 import android.app.Activity;
+import android.app.Service;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.IBinder;
 //import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -27,7 +32,7 @@ import de.fraunhofer.sit.watermarking.algorithmmanager.detector.StreamWatermarkD
 import de.fraunhofer.sit.watermarking.algorithmmanager.exception.WatermarkException;
 import de.fraunhofer.sit.watermarking.sitmark.audio.SITMarkAudioAnnotationDetector;
 
-public class WatermarkDetectorApp extends Activity {
+public class WatermarkDetectorApp extends Service {
 //	private static final String SITMARK_AUDIO_ANNOTATION_ALGO_NAME = "SITMarkAudio2M";
 	private static final String AUDIOANN_MESSAGE_LENGTH_PARAM = "NetMessageLength";
 	public static final String AUDIOANN_FREQ_MIN_PARAM = "FreqMin";
@@ -60,78 +65,10 @@ public class WatermarkDetectorApp extends Activity {
 	private String outputMessage;
 	int numberOfFoundMessage = 0 ;
 	
+	
 	SITMarkAudioAnnotationDetector detector;
 	@SuppressWarnings("deprecation")
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.record);
-		
-		
-//		mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
-//				AudioFormat.ENCODING_PCM_16BIT);
-//		System.out.println("mBufSize = " + mBufSize);
-//		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
-//				sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-//				AudioFormat.ENCODING_PCM_16BIT, mBufSize);
-//		
 
-//		mAudioStartBtn = (Button) findViewById(R.id.mediarecorder1_AudioStartBtn);
-//		mAudioStopBtn = (Button) findViewById(R.id.mediarecorder1_AudioStopBtn);
-//		mResultTextView = (TextView)findViewById(R.id.resultTextView);
-//		mResultTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
-//		mResultTextView.setText("Ready");
-
-		
-	
-
-	}
-	
-	@Override
-		protected void onResume() {
-			// TODO Auto-generated method stub
-			super.onResume();
-			mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
-					AudioFormat.ENCODING_PCM_16BIT);
-			System.out.println("mBufSize = " + mBufSize);
-			mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
-					sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-					AudioFormat.ENCODING_PCM_16BIT, mBufSize);
-			
-			start();	
-			
-		}
-	
-	public void start(){
-		try {
-			isPaly = true;
-			outputMessage = "Start detecting watermarks...\n";
-			System.out.println(outputMessage);
-//			mResultTextView.setText(outputMessage);
-			new RecoderThread(mAudioRecord).start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-
-public void stop(){
-		mAudioRecord.startRecording();
-		isPaly = false;
-//		mResultTextView.setText("Ready");
-		numberOfFoundMessage = 0;
-		detector = null;
-	}
-
-
-@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		
-		stop();
-		
-	}
 	
 	private void testDirectly(InputStream stream) {
 		try {
@@ -196,11 +133,23 @@ public void stop(){
 				if (confidence > 0.1) {
 					distinctFoundMessages.add(detectedMessage.toString());
 					numberOfFoundMessage++;
-					System.out.println("++++ " + detectedMessage.toString());
+					System.out.println("aaa ++++ " + detectedMessage.toString());
+					
+//					listener.sendCode(detectedMessage.toString());
+					String result = detectedMessage.toString(); 
+				
+					Intent intent = new Intent("android.Watermark");
+				//	WatermarkObject objMyobject = new WatermarkObject();
+	                //objMyobject.mData = result;
+	                intent.putExtra("value", result);
+	               // startActivity(intent);
+	                
+	                sendBroadcast(intent);
+	                
 					Toast toast = Toast.makeText(getApplicationContext(), detectedMessage.toString(), Toast.LENGTH_LONG);
 					toast.show();
 					outputMessage += String.format("%s: %s\n", String.format("%03d",numberOfFoundMessage), detectedMessage.toString());
-					
+					WatermarkDetector.callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, detectedMessage.toString()));
 					System.out.println(" output message is " + outputMessage);
 					
 //					mResultTextView.post(new Runnable(){
@@ -218,12 +167,12 @@ public void stop(){
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStop()
 	 */
-	@Override
-	protected void onStop() {
-		super.onStop();
-		mAudioRecord.release();
-		mAudioRecord = null;
-	}
+//	@Override
+//	protected void onStop() {
+//		super.onStop();
+//		mAudioRecord.release();
+//		mAudioRecord = null;
+//	}
 	
 	public class RecoderThread extends Thread {
 
@@ -250,4 +199,59 @@ public void stop(){
 	        }
 		}
 	}
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		super.onCreate();
+		
+
+//		
+mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
+		AudioFormat.ENCODING_PCM_16BIT);
+System.out.println("mBufSize = " + mBufSize);
+mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
+		sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+		AudioFormat.ENCODING_PCM_16BIT, mBufSize);
+
+	}
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		start();
+		return super.onStartCommand(intent, flags, startId);
+
+	}
+	
+	public void start() {
+		// TODO Auto-generated method stub
+		try {
+			isPaly = true;
+			outputMessage = "Start detecting watermarks...\n";
+			System.out.println(outputMessage);
+//			mResultTextView.setText(outputMessage);
+			new RecoderThread(mAudioRecord).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+	}
+	@Override
+	public boolean onUnbind(Intent intent) {
+		// TODO Auto-generated method stub
+		return super.onUnbind(intent);
+	}
+
+	
+	
+
 }
