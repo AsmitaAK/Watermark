@@ -1,8 +1,12 @@
 package com.sanda.plugins.WatermarkDetector;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 //import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.LinkedList;
 //import java.util.ArrayList;
 //import java.util.Arrays;
 import java.util.List;
@@ -10,6 +14,17 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.cordova.PluginResult;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.Service;
@@ -134,10 +149,15 @@ public class WatermarkDetectorApp extends Service {
 					distinctFoundMessages.add(detectedMessage.toString());
 					numberOfFoundMessage++;
 					System.out.println("aaa ++++ " + detectedMessage.toString());
-					
+					//Asmita
+//					if(numberOfFoundMessage >=1){
+//						this.stopSelf();
+//					}
 //					listener.sendCode(detectedMessage.toString());
+					sendCode(detectedMessage.toString(),"19.118962479677364","72.87003725767136");
+					
 					String result = detectedMessage.toString(); 
-				
+					
 					Intent intent = new Intent("android.Watermark");
 				//	WatermarkObject objMyobject = new WatermarkObject();
 	                //objMyobject.mData = result;
@@ -149,8 +169,9 @@ public class WatermarkDetectorApp extends Service {
 					Toast toast = Toast.makeText(getApplicationContext(), detectedMessage.toString(), Toast.LENGTH_LONG);
 					toast.show();
 					outputMessage += String.format("%s: %s\n", String.format("%03d",numberOfFoundMessage), detectedMessage.toString());
-					WatermarkDetector.callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, detectedMessage.toString()));
-					System.out.println(" output message is " + outputMessage);
+					
+//					WatermarkDetector.callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, detectedMessage.toString()));
+//					System.out.println(" output message is " + outputMessage);
 					
 //					mResultTextView.post(new Runnable(){
 //					    @Override
@@ -223,6 +244,8 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// TODO Auto-generated method stub
 		start();
+		//Asmita
+		//this.stopSelf();
 		return super.onStartCommand(intent, flags, startId);
 
 	}
@@ -239,6 +262,26 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 			e.printStackTrace();
 		}
 	}
+//	public void stopThread(){
+//		  if(WatermarkDetectorApp.RecoderThread(mAudioRecord)!=null){
+//			  
+//			  WatermarkDetectorApp.getThread().interrupt();
+//			  WatermarkDetectorApp.setThread(null);
+//		  }
+//		}
+//	@Override
+//	public void onStop()
+//	{
+//	    super.onStop();
+//	    stopService(new Intent(getApplicationContext(), YourService.class));
+//	}
+//
+//	@Override
+//	public void onPause()
+//	{
+//	    super.onPause();
+//	    stopService(new Intent(getApplicationContext(), YourService.class));
+//	}
 	
 	@Override
 	public void onDestroy() {
@@ -250,8 +293,177 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 		// TODO Auto-generated method stub
 		return super.onUnbind(intent);
 	}
+//Dec23 - Asmita
+	public void sendCode(String code,String lat,String lon){
+		String url = "http://yourwellness.com/wemet/api/getting_started.php";
+		String tag[] = {"request_type","code","lat","lon"};
+		String value[] = {"get_banner_using_code"/*"wavemark"*/,code, lat , lon};
 
-	
-	
+		String api = addParameter(url/*url[0]*/, tag, value);
 
+		HttpClient httpClient = new DefaultHttpClient();
+		HttpPost httpPost = new HttpPost(api);
+
+		try {
+			HttpResponse response = httpClient.execute(httpPost);
+			HttpEntity entity = response.getEntity();
+
+			InputStream stream = entity.getContent();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream,"UTF-8"));
+			String data = null;
+			String result = null;
+			while((data = reader.readLine()) != null){
+				if(result == null){
+					result = data;
+				}else{
+					result +=data;
+				}
+			}
+
+			System.out.println(" response in result is " + result);
+			//				UtilFunctions.getInstance().invokeRequest(_url);
+				parseJSON(result);
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	///Dec23 - Asmita
+	public static String addParameter(String url,String[] tag,String[] value){
+		if(!url.endsWith("?"))
+			url += "?";
+
+		List<BasicNameValuePair> params = new LinkedList<BasicNameValuePair>();
+		//		params.add(new BasicNameValuePair("request_type","wavemark"));
+		for(int i=0;i<tag.length;i++)
+		{
+			params.add(new BasicNameValuePair(tag[i],value[i]));
+		}
+		String paramString = URLEncodedUtils.format(params, "UTF-8");
+		url += paramString;
+
+		return url;		
+	}
+	public void parseJSON(String json){
+		try {
+			JSONObject jsonObjectRequest = new JSONObject(json);
+			JSONObject jsonObject1 = jsonObjectRequest.getJSONObject("ResponseHeader");
+			String request = jsonObject1.getString("request_type");
+			Log.e("---------------request---------------------", request);
+			
+			JSONObject jsonObject = new JSONObject(json);
+			JSONObject responsed = jsonObject.getJSONObject("ResponseDetail");
+			String project_id = responsed.getString("project_id");
+			String project_title =responsed.getString("project_title");
+			String project_desc =responsed.getString("project_desc");
+			String campaign_id =responsed.getString("campaign_id");
+			String test_count =responsed.getString("test_count");
+			String project_start_data =responsed.getString("project_start_data");
+			String project_end_data =responsed.getString("project_end_data");
+			String project_start_time =responsed.getString("project_start_time");
+			String project_end_time =responsed.getString("project_end_time");
+			String expiry_msg =responsed.getString("expiry_msg");
+
+			if(responsed.has("ErrorCode")){
+				String errorCode = responsed.getString("ErrorCode");
+
+				if(errorCode.equalsIgnoreCase("1"))
+					//return null;
+					Log.e("Error in parsing data", "Error");
+			}
+			if(responsed.has("banner"))
+			{
+
+				Object baner = responsed.get("banner");
+
+				if (baner instanceof JSONArray) {
+					JSONArray banner = (JSONArray)baner;
+					
+				
+					for(int i=0;i<banner.length();i++)
+					{
+						
+						JSONObject jsonO = banner.getJSONObject(i);
+						String id = (String)jsonO.getString("id");
+						String title = (String) jsonO.getString("Title");
+						String imageUrl = (String)jsonO.getString("Image_Url");
+						String url = (String)jsonO.getString("Image_Link");
+						String desc = (String)jsonO.getString("Description");
+						Log.e("ID", Long.valueOf(id).toString());
+						Log.e("Title", title);
+						Log.e("imageUrl", imageUrl);
+						Log.e("url", url);
+						Log.e("desc", desc);
+						Log.e("project_id", project_id);
+						Log.e("project_start_data", project_start_data);
+						Log.e("project_end_data", project_end_data);
+						Log.e("project_end_data", project_end_data);
+						Log.e("project_start_time", project_start_time);
+						Log.e("expiry_msg", expiry_msg);
+						
+//						response.setId(Long.valueOf(id));
+//						response.setTitle(title);
+//						response.setImageUrl(imageUrl);
+//						response.setUrl(url);
+//						response.setDescription(desc);
+//						//added by Lakshmi
+//						response.setProject_id(project_id);
+//						response.setStart_Date(project_start_data);
+//						response.setEnd_Date(project_end_data);
+//						response.setStart_time(project_start_time);
+//						response.setEnd_time(project_end_time);
+//						response.setExpiry_message(expiry_msg);
+						
+					}
+					
+				}else{
+					JSONObject jsonO = (JSONObject)baner;
+					
+					String id = (String)jsonO.getString("id");
+					String title = (String) jsonO.getString("Title");
+					String imageUrl = (String)jsonO.getString("Image_Url");
+					String url = (String)jsonO.getString("Image_Link");
+					String desc = (String)jsonO.getString("Description");
+					Log.e("ID", Long.valueOf(id).toString());
+					Log.e("Title", title);
+					Log.e("imageUrl", imageUrl);
+					Log.e("url", url);
+					Log.e("desc", desc);
+					Log.e("project_id", project_id);
+					Log.e("project_start_data", project_start_data);
+					Log.e("project_end_data", project_end_data);
+					Log.e("project_end_data", project_end_data);
+					Log.e("project_start_time", project_start_time);
+					Log.e("expiry_msg", expiry_msg);
+					
+//					response.setId(Long.valueOf(id));
+//					response.setTitle(title);
+//					response.setImageUrl(imageUrl);
+//					response.setUrl(url);
+//					response.setDescription(desc);
+//					//added by lakshmi,prasad
+//					response.setProject_id(project_id);
+//					response.setStart_Date(project_start_data);
+//					response.setEnd_Date(project_end_data);
+//					response.setStart_time(project_start_time);
+//					response.setEnd_time(project_end_time);
+//					response.setExpiry_message(expiry_msg);
+					
+				}
+			}
+			if(request.equals("success")){
+			WatermarkDetector.callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, responsed.toString()));
+			System.out.println(" responsed.toString() is " + responsed.toString());
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

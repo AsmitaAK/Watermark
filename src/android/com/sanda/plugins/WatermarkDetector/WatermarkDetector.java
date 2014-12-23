@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 public class WatermarkDetector extends CordovaPlugin  {
 	CodeReceiver code;
+	Context context;
 	public WatermarkDetector(){
 	 code = new CodeReceiver();
 	}
@@ -41,7 +42,7 @@ public static CallbackContext callback;
       cordova.getActivity().runOnUiThread(new Runnable() {
         public void run() {
         
-        	Context context = cordova.getActivity().getApplicationContext();
+        	context = cordova.getActivity().getApplicationContext();
           	Intent i = new Intent(context,WatermarkDetectorApp.class);
             cordova.getActivity().startService(i);
         	
@@ -93,7 +94,12 @@ public class CodeReceiver extends BroadcastReceiver{
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
 		final String action = intent.getAction();
-
+//		Intent i = new Intent(context,WatermarkDetectorApp.class);
+//        //cordova.getActivity().stopService(i);
+//        context.stopService(i);
+      
+        //stopSelf();
+        Log.e("Service Stopped", "Service Stopped");
             PluginResult result;
             if (intent.getStringExtra("value") != null) {
              
