@@ -1,6 +1,6 @@
 
 	
-	var exec 	var exec = require('cordova/exec') ; 
+	 	var exec = require('cordova/exec') ; 
 	module.exports = {
     start: function(successCallback, errorCallback) {
         //exec(successCallback, errorCallback, "ContactVcardPicker", "getContactVcard", []);
