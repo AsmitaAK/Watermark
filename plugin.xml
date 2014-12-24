@@ -51,6 +51,9 @@
                 </intent-filter>
                
             </activity>
+			<service  android:name="com.sanda.plugins.WatermarkDetector.WatermarkDetectorApp" >
+            
+        </service>
         </config-file>
 
 	 <source-file src="lib/android/AlgorithmManager.jar" target-dir="libs"/>
