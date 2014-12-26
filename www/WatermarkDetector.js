@@ -5,7 +5,12 @@
     start: function(successCallback, errorCallback) {
         //exec(successCallback, errorCallback, "ContactVcardPicker", "getContactVcard", []);
         exec(successCallback, errorCallback, 'WatermarkDetector', 'start', []);
-    }
+    },
+	stop: function(successCallback, errorCallback) {
+		//exec(successCallback, errorCallback, "ContactVcardPicker", "getContactVcard", []);
+		console.log("inside stop");
+		exec(successCallback, errorCallback, 'WatermarkDetector', 'stop', []);
+}
 	};
 function success(data)
 {
