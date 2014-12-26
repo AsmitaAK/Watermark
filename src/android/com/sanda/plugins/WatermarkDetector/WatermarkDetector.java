@@ -20,12 +20,13 @@ import org.json.JSONObject;
 public class WatermarkDetector extends CordovaPlugin  {
 	CodeReceiver code;
 	Context context;
+	Intent i;
 	public WatermarkDetector(){
 	 code = new CodeReceiver();
 	}
 
   private static final String ACTION_SHOW_EVENT = "start";
-
+  private static final String ACTION_STOP_EVENT = "stop";
 
 public static CallbackContext callback;
 
@@ -39,67 +40,70 @@ public static CallbackContext callback;
     	 PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
          pluginResult.setKeepCallback(true);
          callback.sendPluginResult(pluginResult);
-      cordova.getActivity().runOnUiThread(new Runnable() {
-        public void run() {
-        
-        	context = cordova.getActivity().getApplicationContext();
-          	Intent i = new Intent(context,WatermarkDetectorApp.class);
-            cordova.getActivity().startService(i);
-        	
-            
-//          callbackContext.success();
-            
-//          callbackContext.success("");        // callbackContext.
-//            PluginResult result;
-//            result = new PluginResult(PluginResult.Status.OK,
-//                    "Wifi Connected");
-//            result.setKeepCallback(true);
-//           // result.setKeepCallback(false);
-//            JSONObject json = new JSONObject();
-//            try {
-//				json.put("foo", "bar");
-//			} catch (JSONException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-           // callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "plugin result"));
-            //result.setKeepCallback(false);
-//            if (callbackContext != null) {
-//                //callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK,"hello world"));
-//                
-//                //callbackContext = null;
-//            }
-            
-//            PluginResult copy_ret = new PluginResult(PluginResult.Status.OK, "sanda plugin");
-//            callbackContext.sendPluginResult(copy_ret);
-//            callbackContext.success();
-        }
-        
-      });
-
+         context = cordova.getActivity().getApplicationContext();
+       	 i = new Intent(context,WatermarkDetectorApp.class);
+       	Log.e("Service Started", "startService Called");
+       	cordova.getActivity().startService(i);
+       	
+     
       return true;
-    } else {
+    }else  if (ACTION_STOP_EVENT.equals(action)){
+    	//WatermarkDetectorApp.getThread().interrupt();
+    	try {
+			WatermarkDetectorApp.RecoderThread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+				Log.e("Stop Service ", "inside Stop Event");
+				// TODO Auto-generated method stub
+				context = cordova.getActivity().getApplicationContext();
+		     	i = new Intent(context,WatermarkDetectorApp.class);
+		        cordova.getActivity().stopService(i);
+		        Log.e("Service Stoped", "stopService Called");
+		        
+		      
+		
+    	
+        return true;
+    	
+    }
+    else {
       callbackContext.error("Recording." + action + " is not a supported function. Did you mean '" + ACTION_SHOW_EVENT + "'?");
       return false;
     }
+	
     
     
     
   }
 
-
+@Override
+public void onPause(boolean multitasking) {
+	// TODO Auto-generated method stub
+	super.onPause(multitasking);
+	//Intent i = new Intent(context,WatermarkDetectorApp.class);
+    //cordova.getActivity().stopService(i);
+    context.stopService(i);
+  
+    //stopSelf();
+    Log.e("Service Stopped", "Service Stopped");
+}
+@Override
+public void onDestroy() {
+	// TODO Auto-generated method stub
+	super.onDestroy();
+	// stopService(new Intent(getApplicationContext(), WatermarkDetectorApp.class));
+	 context.stopService(i);
+}
 public class CodeReceiver extends BroadcastReceiver{
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
 		final String action = intent.getAction();
-//		Intent i = new Intent(context,WatermarkDetectorApp.class);
-//        //cordova.getActivity().stopService(i);
-//        context.stopService(i);
-      
-        //stopSelf();
-        Log.e("Service Stopped", "Service Stopped");
+		
             PluginResult result;
             if (intent.getStringExtra("value") != null) {
              

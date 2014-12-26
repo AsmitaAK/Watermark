@@ -65,7 +65,7 @@ public class WatermarkDetectorApp extends Service {
 //	private WatermarkDetectorApp mMediaRecorder;
 //	private String strTempFile = "recaudio_";
 	private AudioRecord mAudioRecord;
-	
+	boolean mStatus = true;
 	
 	private static int   sampleRateInHz = 44100;
 	// AudioRecord 
@@ -170,15 +170,7 @@ public class WatermarkDetectorApp extends Service {
 					toast.show();
 					outputMessage += String.format("%s: %s\n", String.format("%03d",numberOfFoundMessage), detectedMessage.toString());
 					
-//					WatermarkDetector.callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, detectedMessage.toString()));
-//					System.out.println(" output message is " + outputMessage);
-					
-//					mResultTextView.post(new Runnable(){
-//					    @Override
-//					    public void run() {
-//					    	mResultTextView.setText(outputMessage);
-//					    }
-//					});
+
 				}
 			}
 		} while (foundMessage);
@@ -206,7 +198,7 @@ public class WatermarkDetectorApp extends Service {
 		public void run() {
 			super.run();
 			mAudioRecord.startRecording();
-			
+		
 			while (isPaly)
 	        {
 				byte[] bytes = new byte[mBufSize];
@@ -232,10 +224,10 @@ public class WatermarkDetectorApp extends Service {
 		
 
 //		
-mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
+		mBufSize = AudioRecord.getMinBufferSize(sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO, 
 		AudioFormat.ENCODING_PCM_16BIT);
-System.out.println("mBufSize = " + mBufSize);
-mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
+		System.out.println("mBufSize = " + mBufSize);
+		mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 
 		sampleRateInHz, AudioFormat.CHANNEL_CONFIGURATION_MONO,
 		AudioFormat.ENCODING_PCM_16BIT, mBufSize);
 
@@ -249,7 +241,7 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 		return super.onStartCommand(intent, flags, startId);
 
 	}
-	
+	 
 	public void start() {
 		// TODO Auto-generated method stub
 		try {
@@ -262,31 +254,18 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 			e.printStackTrace();
 		}
 	}
-//	public void stopThread(){
-//		  if(WatermarkDetectorApp.RecoderThread(mAudioRecord)!=null){
-//			  
-//			  WatermarkDetectorApp.getThread().interrupt();
-//			  WatermarkDetectorApp.setThread(null);
-//		  }
-//		}
-//	@Override
-//	public void onStop()
-//	{
-//	    super.onStop();
-//	    stopService(new Intent(getApplicationContext(), YourService.class));
-//	}
-//
-//	@Override
-//	public void onPause()
-//	{
-//	    super.onPause();
-//	    stopService(new Intent(getApplicationContext(), YourService.class));
-//	}
+
 	
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		//this.stopSelf();
+		 isPaly = false;
+		mAudioRecord.stop();
+		WatermarkDetectorApp.RecoderThread.interrupted();
+		//mAudioRecord = null;
+		
 	}
 	@Override
 	public boolean onUnbind(Intent intent) {
@@ -295,6 +274,8 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 	}
 //Dec23 - Asmita
 	public void sendCode(String code,String lat,String lon){
+		//mAudioRecord.stop();
+		Log.e("Inside SendCode Method", "stop Called on service");
 		String url = "http://yourwellness.com/wemet/api/getting_started.php";
 		String tag[] = {"request_type","code","lat","lon"};
 		String value[] = {"get_banner_using_code"/*"wavemark"*/,code, lat , lon};
@@ -407,18 +388,7 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 						Log.e("project_start_time", project_start_time);
 						Log.e("expiry_msg", expiry_msg);
 						
-//						response.setId(Long.valueOf(id));
-//						response.setTitle(title);
-//						response.setImageUrl(imageUrl);
-//						response.setUrl(url);
-//						response.setDescription(desc);
-//						//added by Lakshmi
-//						response.setProject_id(project_id);
-//						response.setStart_Date(project_start_data);
-//						response.setEnd_Date(project_end_data);
-//						response.setStart_time(project_start_time);
-//						response.setEnd_time(project_end_time);
-//						response.setExpiry_message(expiry_msg);
+
 						
 					}
 					
@@ -442,18 +412,7 @@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
 					Log.e("project_start_time", project_start_time);
 					Log.e("expiry_msg", expiry_msg);
 					
-//					response.setId(Long.valueOf(id));
-//					response.setTitle(title);
-//					response.setImageUrl(imageUrl);
-//					response.setUrl(url);
-//					response.setDescription(desc);
-//					//added by lakshmi,prasad
-//					response.setProject_id(project_id);
-//					response.setStart_Date(project_start_data);
-//					response.setEnd_Date(project_end_data);
-//					response.setStart_time(project_start_time);
-//					response.setEnd_time(project_end_time);
-//					response.setExpiry_message(expiry_msg);
+
 					
 				}
 			}
